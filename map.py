@@ -1,3 +1,5 @@
+import struct
+
 # Memory Locations and lengths in bytes
 memloc_unknown0 = 0x00
 memlen_unknown0 = 4
@@ -27,6 +29,7 @@ memloc_obj = 0x4ce
 memlen_obj = 0 # to EOF
 
 # Type Data
+game_modes_amount = 4
 game_modes = {
 	'solo' : 0x00,
 	'coop' : 0x01,
@@ -34,6 +37,14 @@ game_modes = {
 	'unset' : 0x04
 }
 
+tile_amount = -1 # FIX ME
+tile_data = {
+        'empty' : 0x00,
+        'full' : 0x01
+}
+
+object_amount = 0x1c + 1
+object_length_bytes = 5 #number of bytes in an object
 object_data = {
 	'ninja' : 0x00,
 	'mine' : 0x01,
@@ -70,6 +81,15 @@ object_data = {
 map_width = 42
 map_height = 23
 
+def write_file_length( map, length = None ):
+	"This writes the length of the file to the file, if length is None get_file_size_bytes() is used"
+	if(length is None):
+		length = get_file_size_bytes(map)
+	
+	map.seek(memloc_file_length)
+	length_short = struct.pack("<h", length) # <h represents little-endian short
+	map.write(length_short)
+
 def erase_name( map ):
 	"This removes all characters from the name of the map, leaving it blank."
 	map.seek(memloc_name)
@@ -85,10 +105,43 @@ def write_mode( map, mode ):
 	map.seek(memloc_mode)
 	map.write(bytes([game_modes[mode]]))
 
+def write_tile( map, tile, location_x, location_y = None ):
+	if(location_y is not None):
+		location_x += location_y * map_width
+	
+	map.seek(memloc_tile + location_x)
+	map.write(bytes([tile_data[tile]]))
+	
+def write_object( map, obj, index ):
+	"Write object in file at index, obj should be list with exmaple format: ['mine', 4, 3, 0, 0]"
+	map.seek(memloc_obj + index * 5)
+	obj[0] = object_data[obj[0]]
+	map.write(bytes(obj))
+
+def write_obj_count( map, obj, count ):
+	"Writes the object count for the object represented by obj, for the amount of (integer) count."
+	obj_num = object_data[obj]
+	map.seek(memloc_obj_count + obj_num * 2) # add obj_num * 2 as offset, each object is a 2 byte short
+	count_short_bytes = struct.pack("<h", count)
+	map.write(count_short_bytes)
+	
+def get_file_size_bytes( file ):
+	"Returns the number of bytes in file"
+	map.seek(0, 2) #seek 0 bytes (0), relative to the end of the file (2)
+	return map.tell() #return file's current position (EOF)
+	
+def get_object_counts( map ):
+	"Returns array of integers representing counts of objects found in object data area"
+	object_counts = [] * object_amount #one integer per object
+	map.seek(memloc_obj)
+	while(map.tell < get_file_size_bytes(map)):
+		
+	
+
 f = open("TILE TOP", "r+b")
+erase_name(f)
+write_name(f, 'Level name, first test. Long name is okay?')
+write_mode(f, 'unset')
+write_object(f, ['gold', 43, 42, 0, 1], 0)
 
-write_mode(f, 'race')
 f.close()
-	
-
-	
