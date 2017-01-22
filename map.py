@@ -1,5 +1,4 @@
 import struct
-import random
 
 # Memory Locations and lengths in bytes
 memloc_unknown0    = 0x00
@@ -38,10 +37,42 @@ game_modes = {
 	'unset' : 0x04
 }
 
-tile_amount = -1 # FIX ME
+tile_amount = 34
 tile_data = {
         'empty' : 0x00,
-        'full' : 0x01
+        'full' : 0x01,
+		'halfN' : 0x02, #N = North
+		'halfE' : 0x03, #E = East
+		'halfS' : 0x04, #S = South
+		'halfW' : 0x05, #W = West
+		'slopeNW' : 0x06,
+		'slopeNE' : 0x07,
+		'slopeSE' : 0x08,
+		'slopeSW' : 0x09,
+		'quartermoonNW' : 0x0a,
+		'quartermoonNE' : 0x0b,
+		'quartermoonSE' : 0x0c,
+		'quartermoonSW' : 0x0d,
+		'quarterpipeNW' : 0x0e,
+		'quarterpipeNE' : 0x0f,
+		'quarterpipeSE' : 0x10,
+		'quarterpipeSW' : 0x11,
+		'halfslopeHNW' : 0x12, #H = Horizontal
+		'halfslopeHNE' : 0x13,
+		'halfslopeHSE' : 0x14,
+		'halfslopeHSW' : 0x15,
+		'raisedslopeHNW' : 0x16,
+		'raisedslopeHNE' : 0x17,
+		'raisedslopeHSE' : 0x18,
+		'raisedslopeHSW' : 0x19,
+		'halfslopeVNW' : 0x1a, #V = Vertical
+		'halfslopeVNE' : 0x1b,
+		'halfslopeVSE' : 0x1c,
+		'halfslopeVSW' : 0x1d,
+		'raisedslopeVNW' : 0x1e,
+		'raisedslopeVNE' : 0x1f,
+		'raisedslopeVSE' : 0x20,
+		'raisedslopeVSW' : 0x21
 }
 
 object_amount = 0x1c + 1
@@ -118,9 +149,10 @@ def write_tile( map, tile, location_x, location_y = None ):
 	map.write(bytes([tile_data[tile]]))
 	
 def write_object( map, obj, index ):
-	"Write object in file at index, obj should be list with exmaple format: ['mine', 4, 3, 0, 0]"
+	"Write object in file at index, obj should be list with exmaple format: ['mine', 4, 3, 0, 0] or [2, 4, 3, 0, 0]"
+	if(isinstance(obj[0], str)): #if type is string, convert to int
+		obj[0] = object_data[obj[0]]
 	map.seek(memloc_obj + index * 5)
-	obj[0] = object_data[obj[0]]
 	map.write(bytes(obj))
 
 def write_object_count( map, obj, count ):
@@ -170,29 +202,38 @@ def write_object_counts( map, object_counts = None ):
 		
 def sort_objects( map ):
 	"Sorts all of the objects by type, necessary for a map to function expectedly"
+	map.seek(memloc_obj)
+	
+	num_objects = get_total_objects(map)
+	
+	objects = [[]] * num_objects
+	for i in range(len(objects)):
+		objects[i] = [0] * 5
+	
+	objects_byte_pos = 0
+	byte = map.read(1)
+	while(byte):
+		byte_value = struct.unpack("B", byte)[0]
+		objects[objects_byte_pos//5][objects_byte_pos%5] = byte_value
+		objects_byte_pos += 1
+		byte = map.read(1)
+	
+	objects.sort(key=lambda x:x[0])
+	
+	map.seek(memloc_obj)
+	object_index = 0
+	for object_list in objects:
+		write_object(map, object_list, object_index)
+		object_index += 1
+		
 	
 def get_total_objects( map ):
 	"Returns the number of objects in a map"
 	return (get_file_size_bytes(map) - 0x4ce) // 5 #in brackets is # of bytes in object area of file, each object is 5 bytes
 
-map = open("Untangle My Hair", "r+b")
-
-
-write_mode(map, 'solo')
-
-write_object(map, ['mine', 4, 4, 0, 0], 0)
-write_object(map, ['mine', 4, 6, 0, 0], 1)
-write_object(map, ['mine', 4, 8, 0, 0], 2)
-write_object(map, ['mine', 4, 10, 0, 0], 3)
-write_object(map, ['mine', 4, 12, 0, 0], 4)
-write_object(map, ['mine', 4, 14, 0, 0], 5)
-write_object(map, ['mine', 4, 14, 0, 0], 6)
-write_object(map, ['mine', 4, 14, 0, 0], 7)
-
-print(get_total_objects(map))
-
-write_object_counts(map)
-write_file_length(map)
-
-
-map.close()
+	
+def write_essentials( map ):
+	"Makes calls to the following functions, all necessary for a map to work: sort_objects, write_object_counts, write_file_length"
+	sort_objects(map)
+	write_object_counts(map)
+	write_file_length(map)
