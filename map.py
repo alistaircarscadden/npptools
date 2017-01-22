@@ -39,8 +39,8 @@ game_modes = {
 
 tile_amount = 34
 tile_data = {
-    'empty' : 0x00,
-    'full' : 0x01,
+	'empty' : 0x00,
+	'full' : 0x01,
 	'halfN' : 0x02, #N = North
 	'halfE' : 0x03, #E = East
 	'halfS' : 0x04, #S = South
@@ -208,7 +208,7 @@ def sort_objects( map ):
 	
 	objects = [[]] * num_objects
 	for i in range(len(objects)):
-		objects[i] = [0] * 5
+	 objects[i] = [0] * 5
 	
 	objects_byte_pos = 0
 	byte = map.read(1)
