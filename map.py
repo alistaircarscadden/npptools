@@ -39,40 +39,40 @@ game_modes = {
 
 tile_amount = 34
 tile_data = {
-        'empty' : 0x00,
-        'full' : 0x01,
-		'halfN' : 0x02, #N = North
-		'halfE' : 0x03, #E = East
-		'halfS' : 0x04, #S = South
-		'halfW' : 0x05, #W = West
-		'slopeNW' : 0x06,
-		'slopeNE' : 0x07,
-		'slopeSE' : 0x08,
-		'slopeSW' : 0x09,
-		'quartermoonNW' : 0x0a,
-		'quartermoonNE' : 0x0b,
-		'quartermoonSE' : 0x0c,
-		'quartermoonSW' : 0x0d,
-		'quarterpipeNW' : 0x0e,
-		'quarterpipeNE' : 0x0f,
-		'quarterpipeSE' : 0x10,
-		'quarterpipeSW' : 0x11,
-		'halfslopeHNW' : 0x12, #H = Horizontal
-		'halfslopeHNE' : 0x13,
-		'halfslopeHSE' : 0x14,
-		'halfslopeHSW' : 0x15,
-		'raisedslopeHNW' : 0x16,
-		'raisedslopeHNE' : 0x17,
-		'raisedslopeHSE' : 0x18,
-		'raisedslopeHSW' : 0x19,
-		'halfslopeVNW' : 0x1a, #V = Vertical
-		'halfslopeVNE' : 0x1b,
-		'halfslopeVSE' : 0x1c,
-		'halfslopeVSW' : 0x1d,
-		'raisedslopeVNW' : 0x1e,
-		'raisedslopeVNE' : 0x1f,
-		'raisedslopeVSE' : 0x20,
-		'raisedslopeVSW' : 0x21
+    'empty' : 0x00,
+    'full' : 0x01,
+	'halfN' : 0x02, #N = North
+	'halfE' : 0x03, #E = East
+	'halfS' : 0x04, #S = South
+	'halfW' : 0x05, #W = West
+	'slopeNW' : 0x06,
+	'slopeNE' : 0x07,
+	'slopeSE' : 0x08,
+	'slopeSW' : 0x09,
+	'quartermoonNW' : 0x0a,
+	'quartermoonNE' : 0x0b,
+	'quartermoonSE' : 0x0c,
+	'quartermoonSW' : 0x0d,
+	'quarterpipeNW' : 0x0e,
+	'quarterpipeNE' : 0x0f,
+	'quarterpipeSE' : 0x10,
+	'quarterpipeSW' : 0x11,
+	'halfslopeHNW' : 0x12, #H = Horizontal
+	'halfslopeHNE' : 0x13,
+	'halfslopeHSE' : 0x14,
+	'halfslopeHSW' : 0x15,
+	'raisedslopeHNW' : 0x16,
+	'raisedslopeHNE' : 0x17,
+	'raisedslopeHSE' : 0x18,
+	'raisedslopeHSW' : 0x19,
+	'halfslopeVNW' : 0x1a, #V = Vertical
+	'halfslopeVNE' : 0x1b,
+	'halfslopeVSE' : 0x1c,
+	'halfslopeVSW' : 0x1d,
+	'raisedslopeVNW' : 0x1e,
+	'raisedslopeVNE' : 0x1f,
+	'raisedslopeVSE' : 0x20,
+	'raisedslopeVSW' : 0x21
 }
 
 object_amount = 0x1c + 1
