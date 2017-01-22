@@ -1,39 +1,40 @@
 import struct
+import random
 
 # Memory Locations and lengths in bytes
-memloc_unknown0 = 0x00
-memlen_unknown0 = 4
+memloc_unknown0    = 0x00
+memlen_unknown0    = 4
 
 memloc_file_length = 0x04
 memlen_file_length = 2
 
-memloc_unknown1 = 0x06
-memlen_unknown1 = 6
+memloc_unknown1    = 0x06
+memlen_unknown1    = 6
 
-memloc_mode = 0x0c
-memlen_mode = 1
+memloc_mode        = 0x0c
+memlen_mode        = 1
 
-memloc_unknown2 = 0x0d
-memlen_unknown2 = 25
+memloc_unknown2    = 0x0d
+memlen_unknown2    = 25
 
-memloc_name = 0x26
-memlen_name = 128
+memloc_name        = 0x26
+memlen_name        = 128
 
-memloc_tile = 0xb8
-memlen_tile = 966
+memloc_tile        = 0xb8
+memlen_tile        = 966
 
-memloc_obj_count  = 0x47e
-memlen_obj_count  = 80
+memloc_obj_count   = 0x47e
+memlen_obj_count   = 80
 
-memloc_obj = 0x4ce
-memlen_obj = 0 # to EOF
+memloc_obj         = 0x4ce
+memlen_obj         = 0 # to EOF
 
 # Type Data
 game_modes_amount = 4
 game_modes = {
-	'solo' : 0x00,
-	'coop' : 0x01,
-	'race' : 0x02,
+	'solo'  : 0x00,
+	'coop'  : 0x01,
+	'race'  : 0x02,
 	'unset' : 0x04
 }
 
@@ -80,6 +81,10 @@ object_data = {
 # Map Constants
 map_width = 42
 map_height = 23
+map_object_x_min = 4   #0x04
+map_object_y_min = 4   #0x04
+map_object_x_max = 172 #0xac
+map_object_y_max = 96  #0x60
 
 def write_file_length( map, length = None ):
 	"This writes the length of the file to the file, if length is None get_file_size_bytes() is used"
@@ -87,7 +92,7 @@ def write_file_length( map, length = None ):
 		length = get_file_size_bytes(map)
 	
 	map.seek(memloc_file_length)
-	length_short = struct.pack("<h", length) # <h represents little-endian short
+	length_short = struct.pack("<H", length) # <h represents little-endian short
 	map.write(length_short)
 
 def erase_name( map ):
@@ -118,30 +123,76 @@ def write_object( map, obj, index ):
 	obj[0] = object_data[obj[0]]
 	map.write(bytes(obj))
 
-def write_obj_count( map, obj, count ):
+def write_object_count( map, obj, count ):
 	"Writes the object count for the object represented by obj, for the amount of (integer) count."
-	obj_num = object_data[obj]
+	if(isinstance(obj, str)):
+		obj_num = object_data[obj]
+	else:
+		obj_num = obj
 	map.seek(memloc_obj_count + obj_num * 2) # add obj_num * 2 as offset, each object is a 2 byte short
 	count_short_bytes = struct.pack("<h", count)
 	map.write(count_short_bytes)
 	
 def get_file_size_bytes( file ):
 	"Returns the number of bytes in file"
-	map.seek(0, 2) #seek 0 bytes (0), relative to the end of the file (2)
-	return map.tell() #return file's current position (EOF)
+	file_position = file.tell() #remember start position to return to it
+	file.seek(0, 2) #seek 0 bytes (0), relative to the end of the file (2)
+	file_end_position = file.tell()
+	file.seek(file_position)
+	return file_end_position #return file's current position (EOF)
+	
+def bytes_to_int( byte_string ):
+	return int(byte_string.decode('utf-8'), 16)
 	
 def get_object_counts( map ):
 	"Returns array of integers representing counts of objects found in object data area"
-	object_counts = [] * object_amount #one integer per object
+	object_counts = [0] * object_amount #one integer per object
 	map.seek(memloc_obj)
-	while(map.tell < get_file_size_bytes(map)):
-		
+	file_size_bytes = get_file_size_bytes(map)
 	
+	while(map.tell() < file_size_bytes):
+		byte = map.read(1) #byte contains the object type
+		obj_type = struct.unpack("B", byte)[0]
+		object_counts[obj_type] += 1 #increment the current type's counter
+		map.seek(4, 1) #skip the four bytes that are not the object type
 
-f = open("TILE TOP", "r+b")
-erase_name(f)
-write_name(f, 'Level name, first test. Long name is okay?')
-write_mode(f, 'unset')
-write_object(f, ['gold', 43, 42, 0, 1], 0)
+	return object_counts
+	
+def write_object_counts( map, object_counts = None ):
+	"Writes the object counts, expects an integer array of length object_amount for object_counts, uses get_object_counts() by default"
+	map.seek(memloc_obj_count)
+	
+	if(object_counts is None):
+		object_counts = get_object_counts(map)
+	
+	for i in range(len(object_counts)):
+		write_object_count(map, i, object_counts[i])
+		
+def sort_objects( map ):
+	"Sorts all of the objects by type, necessary for a map to function expectedly"
+	
+def get_total_objects( map ):
+	"Returns the number of objects in a map"
+	return (get_file_size_bytes(map) - 0x4ce) // 5 #in brackets is # of bytes in object area of file, each object is 5 bytes
 
-f.close()
+map = open("Untangle My Hair", "r+b")
+
+
+write_mode(map, 'solo')
+
+write_object(map, ['mine', 4, 4, 0, 0], 0)
+write_object(map, ['mine', 4, 6, 0, 0], 1)
+write_object(map, ['mine', 4, 8, 0, 0], 2)
+write_object(map, ['mine', 4, 10, 0, 0], 3)
+write_object(map, ['mine', 4, 12, 0, 0], 4)
+write_object(map, ['mine', 4, 14, 0, 0], 5)
+write_object(map, ['mine', 4, 14, 0, 0], 6)
+write_object(map, ['mine', 4, 14, 0, 0], 7)
+
+print(get_total_objects(map))
+
+write_object_counts(map)
+write_file_length(map)
+
+
+map.close()
