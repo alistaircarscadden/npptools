@@ -117,6 +117,9 @@ map_object_y_min = 4   #0x04
 map_object_x_max = 172 #0xac
 map_object_y_max = 96  #0x60
 
+def obj_coord_of_tile( x, y ):
+	return (x * 4 + 4, y * 4 + 4)
+
 def write_file_length( map, length = None ):
 	"This writes the length of the file to the file, if length is None get_file_size_bytes() is used"
 	if(length is None):
